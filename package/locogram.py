@@ -25,7 +25,7 @@ def locogram(data_lf, data_rf, steps_lim, output):
     gyr_conc, jerk_conc, offset = concatenate_signals(data_lf, data_rf)
 
     # for gait events : heel-strikes (offset taken into account for right events)
-    hs_conc = concatenate_events(steps_lim)
+    hs_conc = concatenate_events(steps_lim, offset)
     
     pea = np.zeros((n_tot, n_tot))
 
@@ -114,11 +114,13 @@ def concatenate_signals(data_lf, data_rf):
     return gyr_conc, jerk_conc, offset
 
 
-def concatenate_events(steps_lim):
+def concatenate_events(steps_lim, offset):
     hs_lf = steps_lim[steps_lim["Foot"]== 0]["HS"]
     hs_rf = steps_lim[steps_lim["Foot"]== 1]["HS"]
 
-    hs_conc = np.concatenate((np.transpose(hs_lf), np.transpose(hs_rf)), axis=0)
+    print("offset avant", offset, hs_rf)
+    hs_conc = np.concatenate((np.transpose(hs_lf), np.transpose(hs_rf) + offset), axis=0)
+    print("offset après", hs_conc)
     
     return hs_conc
 
