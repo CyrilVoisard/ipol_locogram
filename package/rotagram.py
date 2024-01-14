@@ -9,90 +9,53 @@ import scipy.stats
 import os
 
 
-def locogram(steps_lim_bis, s_tot, nb_total, nb_r, nb_l, ref, output):
+def locogram(steps_lim_bis, s_tot, n_tot, n_r, n_l, ref, output):
 
     # one table for the right foot, one for the left foot
     events_right = steps_lim_bis[steps_lim_bis["Foot"]== 1]
     events_left = steps_lim_bis[steps_lim_bis["Foot"] == 0]
 
-    nb_total = len(steps_lim_bis)
-    nb_r = len(events_right)
-    nb_l = len(events_left)
+    nb_tot = len(steps_lim_bis)
+    n_r = len(events_right)
+    n_l = len(events_left)
 
     # we build concatenation to simply locogram matrix computation : first left, then right. 
     # for time series : gyration and jerk
     gyr_conc, jerk_conc, offset = concatenate_signals()
 
-    # for gait events : heel-strikes 
+    # for gait events : heel-strikes (offset taken into account for right events)
     hs_conc = concatenate_events()
     
-    pea = np.zeros((nb_total, nb_total))
+    pea = np.zeros((n_tot, n_tot))
 
-    for z1 in range(nb_total):
+    for z1 in range(n_tot):
         for z2 in range(z1+1):
             # parameters
-            s_y1 = np.array([y[start:end] / np.max(y[start:end]),
-                             x[start:end] / np.max(abs(x[start:end]))])
+            start1 = hs_conc[z1]
+            end1 = hs_conc[z1+1]
+            s_y1 = np.array([jerk_conc[start1:end1] / np.max(jerk_conc[start1:end1]),
+                             gyr_conc[start1:end1] / np.max(abs(gyr_conc[start1:end1]))])
             s_y1 = s_y1.transpose()
-        
+
+            start2 = hs_conc[z2]
+            end2 = hs_conc[z2+1]
             s_y2 = np.array([jerk / np.max(jerk),
                              gyr / np.max(abs(gyr))])
-            s_y2 = s_y2.transpose()
+            s_y2 = np.array([jerk_conc[start2:end2] / np.max(jerk_conc[start2:end2]),
+                             gyr_conc[start2:end2] / np.max(abs(gyr_conc[start2:end2]))])
+            s_y2 = s_y1.transpose()
         
             r = 2
             path_min, sim_min = metrics.dtw_path(s_y1, s_y2, global_constraint="itakura", itakura_max_slope=r)
             
-
-
-
-
-
-
-            
-            #if z1 == z2:
-                #pea[z1, z2] = 1
-            #else:
-            if 1==1:
-                # Boucle sur la durée des pas
-                if steps_lim_bis.iloc[z1, 3] - steps_lim_bis.iloc[z1, 2] >= steps_lim_bis.iloc[z2, 3] - \
-                        steps_lim_bis.iloc[z2, 2]:  # step 1 > step 2
-                    # add more points to step to avoid limit effects
-                    step1 = s_tot[int(steps_lim_bis.iloc[z1, 2] - 5):int(steps_lim_bis.iloc[z1, 3] + 5)]
-                    step2 = s_tot[int(steps_lim_bis.iloc[z2, 2]):int(steps_lim_bis.iloc[z2, 3])]
-                    print(z1, z2, )
-                else:
-                    if steps_lim_bis.iloc[z1, 3] - steps_lim_bis.iloc[z1, 2] < steps_lim_bis.iloc[z2, 3] - \
-                            steps_lim_bis.iloc[z2, 2]:
-                        step2 = s_tot[int(steps_lim_bis.iloc[z1, 2]):int(steps_lim_bis.iloc[z1, 3])]
-                        # add more points to step to avoid limit effects
-                        # Pour la suite, on veut que step1 soit toujours le plus grand
-                        step1 = s_tot[int(steps_lim_bis.iloc[z2, 2] - 5):int(steps_lim_bis.iloc[z2, 3] + 5)]
-
-                n1 = len(step1)
-                n2 = len(step2)
-                c_tout = []
-                for z3 in range(int(n1 - n2)):
-
-                    w = scipy.stats.pearsonr(step1[z3:n2 + z3], step2)
-                    # print(z1, z2, w)
-                    c_tout.append(w[0])
-                print(z1, z2, c_tout)
-                if not c_tout:
-                    pea[z1][z2] = 0
-                    pea[z2][z1] = pea[z1][z2]
-                else:
-                    p = np.max(c_tout)
-                    print(p)
-                    if p < 0:
-                        p = 0
-                    pea[z1][z2] = p
-                    pea[z2][z1] = pea[z1][z2]
+            pea[z1][z2] = sim_min
+            pea[z2][z1] = pea[z1][z2]
 
     # Plot
-    x1_bis = np.arange(1, nb_r + 1, 5)
-    # x1 = np.sort(nb_r + 1 - x1_bis)
-    x2_bis = np.arange(1, nb_l + 1, 5)
-    # x2 = np.sort(nb_l + 1 - x2_bis)
+    x1_bis = np.arange(1, n_r + 1, 5)
+    # x1 = np.sort(n_r + 1 - x1_bis)
+    x2_bis = np.arange(1, n_l + 1, 5)
+    # x2 = np.sort(n_l + 1 - x2_bis)
 
     fig_loco, axs = plt.subplots(2, 2, sharex='all', sharey="all", figsize=(12, 10))
     plt.ion()
@@ -102,10 +65,10 @@ def locogram(steps_lim_bis, s_tot, nb_total, nb_r, nb_l, ref, output):
 
     h0 = axs[0, 0].imshow(pea, origin='lower', cmap=cmap, norm=norm)
 
-    axs[0, 0].imshow(pea[nb_r:nb_total, 0:nb_r], origin='lower', cmap=cmap, norm=norm)
-    axs[1, 0].imshow(pea[0:nb_r, 0:nb_r], origin='lower', cmap=cmap, norm=norm)
-    axs[0, 1].imshow(pea[nb_r:nb_total, nb_r:nb_total], origin='lower', cmap=cmap, norm=norm)
-    axs[1, 1].imshow(pea[0:nb_r, nb_r:nb_total], origin='lower', cmap=cmap, norm=norm )
+    axs[0, 0].imshow(pea[n_r:n_tot, 0:n_r], origin='lower', cmap=cmap, norm=norm)
+    axs[1, 0].imshow(pea[0:n_r, 0:n_r], origin='lower', cmap=cmap, norm=norm)
+    axs[0, 1].imshow(pea[n_r:n_tot, n_r:n_tot], origin='lower', cmap=cmap, norm=norm)
+    axs[1, 1].imshow(pea[0:n_r, n_r:n_tot], origin='lower', cmap=cmap, norm=norm )
 
     axs[0, 0].set_ylabel("Left steps", fontsize=20)
     axs[1, 1].set_xlabel("Left steps", fontsize=20)
@@ -114,7 +77,7 @@ def locogram(steps_lim_bis, s_tot, nb_total, nb_r, nb_l, ref, output):
 
     axlist = [axs[1, 0], axs[0, 0], axs[0, 1], axs[1, 1]]
 
-    cbar = fig_loco.colorbar(h0, ax=axlist, ticks=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
+    cbar = fig_loco.colorbar(h0, ax=axlist, ticks=np.arange(np.min(pea), np.max(pea), 5),
                              orientation='vertical', fraction=0.04, pad=0.04)
     cbar.ax.set_yticklabels(['', 'Non similaire', '', '', '', '', '', '', '', 'Très similaire', ''], rotation=90,
                             fontsize=20)
