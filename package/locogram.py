@@ -29,7 +29,7 @@ def locogram(data_lf, data_rf, steps_lim, output):
     
     pea = np.zeros((n_tot, n_tot))
 
-    for z1 in range(n_tot):
+    for z1 in range(n_tot-1):
         for z2 in range(z1+1):
             # parameters
             start1 = hs_conc[z1]
