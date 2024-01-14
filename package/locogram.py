@@ -16,7 +16,7 @@ def locogram(data_lf, data_rf, steps_lim, output):
     events_right = steps_lim[steps_lim["Foot"]== 1]
     events_left = steps_lim[steps_lim["Foot"] == 0]
 
-    nb_tot = len(steps_lim)
+    n_tot = len(steps_lim)
     n_r = len(events_right)
     n_l = len(events_left)
 
