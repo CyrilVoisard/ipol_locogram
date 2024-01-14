@@ -42,7 +42,7 @@ def locogram(data_lf, data_rf, steps_lim, output):
             end2 = hs_conc[z2+1]
             s_y2 = np.array([jerk_conc[start2:end2] / np.max(jerk_conc[start2:end2]),
                              gyr_conc[start2:end2] / np.max(abs(gyr_conc[start2:end2]))])
-            s_y2 = s_y1.transpose()
+            s_y2 = s_y2.transpose()
         
             r = 2
             print("test", s_y1, s_y2)
