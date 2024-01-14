@@ -45,6 +45,7 @@ def locogram(data_lf, data_rf, steps_lim, output):
             s_y2 = s_y1.transpose()
         
             r = 2
+            print("test", s_y1, s_y2)
             path_min, sim_min = metrics.dtw_path(s_y1, s_y2, global_constraint="itakura", itakura_max_slope=r)
             
             pea[z1][z2] = sim_min
