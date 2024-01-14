@@ -92,12 +92,61 @@ def locogram(steps_lim_bis, s_tot, n_tot, n_r, n_l, ref, output):
     fig_loco.suptitle('Locogram for ' + ref, fontsize=30)
     fig_loco.set_size_inches(20, 20)
 
-    # On est déjà dans le bon répertoire
+    # save fig
+    os.chdir(output)
     plt.ioff()
-    plt.savefig(fname=(ref + "_locogram.png"), bbox_inches='tight')
+    plt.savefig(fname=("_loco.svg"), bbox_inches='tight')
 
     return None
 
+
+def concatenate_signals(data_lf, data_rf):
+
+    gyr_lf = data_lf["Gyr_Y"]
+    gyr_rf = data_rf["Gyr_Y"]
+    gyr_conc = np.concatenate((np.transpose(gyr_lf), np.transpose(gyr_rf)), axis=0)
+
+    jerk_lf = calculate_jerk(data_lf)
+    jerk_rf = calculate_jerk(data_rf)
+    jerk_conc = np.concatenate((np.transpose(jerk_lf), np.transpose(jerk_rf)), axis=0)
+
+    offset = int(len(gyr_lf))
+
+    return gyr_conc, jerk_conc, offset
+
+def concatenate_events(steps_lim):
+    hs_lf = steps_lim[steps_lim["Foot"]== 0]["HS"]
+    hs_rf = steps_lim[steps_lim["Foot"]== 1]["HS"]
+
+    hs_conc = np.concatenate((np.transpose(hs_lf), np.transpose(hs_rf)), axis=0)
+    
+    return hs_conc
+
+
+def calculate_jerk(data, freq=100):
+    """Calculate jerk from acceleration data. 
+
+    Parameters
+    ----------
+        data {dataframe} -- pandas dataframe.
+        freq {int} -- acquisition frequency in Herz.
+
+    Returns
+    -------
+        z {array} -- jerk time series.
+    """
+    
+    jerk_tot = np.sqrt(
+        np.diff(data["FreeAcc_X"]) ** 2 + np.diff(data["FreeAcc_Z"]) ** 2 + np.diff(data["FreeAcc_Y"]) ** 2)
+    jerk_tot = np.array(jerk_tot.tolist() + [0])
+    y = pd.DataFrame(jerk_tot)
+    # Rolling the jerk with a center window 
+    y_mean = y.rolling(9, center=True, win_type='boxcar').sum()
+    y_mean = y_mean.fillna(0)
+    # Transpose to have a numpy array 
+    z = y_mean.to_numpy().transpose()[0]
+    
+    return z
 
 
 def rotagram(steps_lim_bis, seg_lim, data_lb, output):
