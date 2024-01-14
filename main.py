@@ -10,7 +10,7 @@ from scipy.signal import butter, filtfilt
 from scipy import interpolate
 import sys
 
-from package import import_data, rotagram
+from package import import_data, locogram
 
 # if you need to access a file next to the source code, use the variable ROOT
 ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -62,9 +62,11 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description='Return a rotagram for a given trial.')
-    parser.add_argument('-i0', metavar='data_lb',
-                        help='Time series for the lower back sensor.')
-    parser.add_argument('-i1', metavar='gait_events',
+    parser.add_argument('-i0', metavar='data_lf',
+                        help='Time series for the left foot sensor.')
+    parser.add_argument('-i1', metavar='data_rf',
+                        help='Time series for the right foot sensor.')
+    parser.add_argument('-i2', metavar='gait_events',
                         help='Metadata with gait events.')
         
     parser.add_argument('-freq', metavar='freq',
@@ -75,11 +77,11 @@ if __name__ == "__main__":
     
     # load data (only lower back in this demo)
     data_lb = import_data.import_XSens(os.path.join(data_WD, args.i0), freq)
-    seg_lim = import_data.get_seg(os.path.join(data_WD, args.i1))
-    steps_lim = import_data.get_steps(os.path.join(data_WD, args.i1), seg_lim)
+    seg_lim = import_data.get_seg(os.path.join(data_WD, args.i2))
+    steps_lim = import_data.get_steps(os.path.join(data_WD, args.i2), seg_lim)
 
     # rotagram design
-    rotagram.rotagram(steps_lim, seg_lim, data_lb, output = data_WD)
+    locogram.locogram(data_lf, data_rf, steps_lim, output = data_WD)
     
     print("ok charge")
     sys.exit(0)
