@@ -118,10 +118,8 @@ def concatenate_events(steps_lim, offset):
     hs_lf = steps_lim[steps_lim["Foot"]== 0]["HS"]
     hs_rf = steps_lim[steps_lim["Foot"]== 1]["HS"]
 
-    print("offset avant", offset, hs_rf)
     hs_conc = np.concatenate((np.transpose(hs_lf), np.transpose(hs_rf) + offset), axis=0)
-    print("offset après", hs_conc)
-    
+
     return hs_conc
 
 
