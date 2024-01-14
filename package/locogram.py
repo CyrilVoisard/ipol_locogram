@@ -21,10 +21,10 @@ def locogram(data_lf, data_rf, steps_lim, output):
 
     # we build concatenation to simply locogram matrix computation : first left, then right. 
     # for time series : gyration and jerk
-    gyr_conc, jerk_conc, offset = concatenate_signals()
+    gyr_conc, jerk_conc, offset = concatenate_signals(data_lf, data_rf)
 
     # for gait events : heel-strikes (offset taken into account for right events)
-    hs_conc = concatenate_events()
+    hs_conc = concatenate_events(steps_lim)
     
     pea = np.zeros((n_tot, n_tot))
 
@@ -113,6 +113,7 @@ def concatenate_signals(data_lf, data_rf):
     offset = int(len(gyr_lf))
 
     return gyr_conc, jerk_conc, offset
+
 
 def concatenate_events(steps_lim):
     hs_lf = steps_lim[steps_lim["Foot"]== 0]["HS"]
