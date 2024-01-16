@@ -94,7 +94,7 @@ def locogram(data_lf, data_rf, steps_lim, output):
     # save fig
     os.chdir(output)
     plt.ioff()
-    plt.savefig(fname=("_loco.svg"), bbox_inches='tight')
+    plt.savefig(fname=("loco.svg"), bbox_inches='tight')
 
     return None
 
