@@ -76,7 +76,7 @@ def locogram(data_lf, data_rf, steps_lim, output):
 
     axlist = [axs[1, 0], axs[0, 0], axs[0, 1], axs[1, 1]]
 
-    cbar = fig_loco.colorbar(h0, ax=axlist, ticks=np.arange(np.min(pea), np.max(pea), 5),
+    cbar = fig_loco.colorbar(h0, ax=axlist, ticks=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7 ,0.8 ,0.9 ,1.0],
                              orientation='vertical', fraction=0.04, pad=0.04)
     cbar.ax.set_yticklabels(['', 'Non similaire', '', '', '', '', '', '', '', 'Très similaire', ''], rotation=90,
                             fontsize=20)
