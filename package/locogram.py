@@ -88,7 +88,7 @@ def locogram(data_lf, data_rf, steps_lim, output):
                         wspace=0.05,
                         hspace=-0.01)
 
-    fig_loco.suptitle('Locogram for ' + ref, fontsize=30)
+    fig_loco.suptitle('Locogram', fontsize=30)
     fig_loco.set_size_inches(20, 20)
 
     # save fig
